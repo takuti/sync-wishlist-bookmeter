@@ -6,11 +6,15 @@ class Synchronizer
     @agent = Mechanize.new
     @base_url = 'http://bookmeter.com'
     login
-    bookmeter_asins
   end
 
   def sync
-    wishlist_asins.each {|asin| add_book(asin) }
+    # book both in wishlist and bookmeter: keep
+    # book only in one of wishlist and bookmeter: toggle status
+    w = wishlist_asins
+    b = bookmeter_asins
+    target = w + b - (w & b) # XOR
+    target.each {|asin| toggle_status(asin) }
   end
 
   private
@@ -52,17 +56,28 @@ class Synchronizer
   end
 
   def bookmeter_asins
-    # noop
+    # first get number of pages
+    pre_url = @base_url + '/home?main=pre'
+    page = @agent.get(pre_url)
+    doc = Nokogiri::HTML(page.content)
+    n_pages = doc.xpath('//input[@name="pages"]').first[:value].to_i
+
+    asins = []
+    (1..n_pages).each do |page|
+      pre_url = @base_url + "/home?main=pre&p=#{page}"
+      page = @agent.get(pre_url)
+      doc = Nokogiri::HTML(page.content)
+
+      # get asins
+      asins.concat(doc.xpath('//input[@name="ASIN.1"]').map {|node| node[:value] })
+    end
+    asins
   end
 
-  def add_book(asin)
+  def toggle_status(asin)
     post_url = @base_url + '/action/add_book_quick.php'
     data = { :asin => asin, :type => 'pre', :from_dialog => 1, :from_page => 'book', :mixi_not_post => 1, :facebook_not_post => 1, :twitter_not_post => 1 }
     @agent.post post_url, data
-  end
-
-  def remove_book(asin)
-    # noop
   end
 end
 
