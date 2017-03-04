@@ -1,7 +1,7 @@
 Wishlist/pre-list Synchronizer
 ===
 
-Bookmeter http://bookmeter.com/ is one of the most popular reading support web services in Japan. Our synchronizer sync its *pre-list* (list of books what a user wants to read) with Amazon's wishlist.
+Bookmeter http://bookmeter.com/ is one of the most popular reading support web services in Japan. Our synchronizer sync its *pre-list* (list of books what a user wants to read) with Amazon wishlist.
 
 ## Installation
 
